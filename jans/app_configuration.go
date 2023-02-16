@@ -340,6 +340,8 @@ func (c *Client) GetAppConfiguration(ctx context.Context) (*AppConfiguration, er
 		return nil, fmt.Errorf("get request failed: %w", err)
 	}
 
+	sortArrays(&ret.AuthorizationRequestCustomAllowedParameters)
+
 	return ret, nil
 }
 
