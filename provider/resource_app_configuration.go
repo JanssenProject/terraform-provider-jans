@@ -1702,7 +1702,7 @@ func resourceAppConfiguration() *schema.Resource {
 				Optional:    true,
 				Description: "The number of registration requests allowed per interval.",
 			},
-			"rateLimitRegistrationPeriodInSeconds": {
+			"rate_limit_registration_period_in_seconds": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The time period in seconds for the rate limit.",
