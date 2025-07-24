@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jans/terraform-provider-jans/jans"
+	"github.com/JanssenProject/terraform-provider-jans/jans"
 )
 
 func resourceLDAPDatabaseConfiguration() *schema.Resource {

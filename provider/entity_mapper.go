@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/jans/terraform-provider-jans/jans"
+	"github.com/JanssenProject/terraform-provider-jans/jans"
 )
 
 // setter is a function that is passed to the encoder function. It
