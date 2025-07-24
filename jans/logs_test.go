@@ -45,8 +45,8 @@ func TestClient_GetAuditLogs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path != "/api/v1/audit" {
-					t.Errorf("Expected path '/api/v1/audit', got %s", r.URL.Path)
+				if r.URL.Path != "/jans-config-api/api/v1/audit" {
+					t.Errorf("Expected path '/jans-config-api/api/v1/audit', got %s", r.URL.Path)
 				}
 
 				if r.Method != http.MethodGet {

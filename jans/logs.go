@@ -3,9 +3,7 @@ package jans
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strconv"
 )
@@ -20,8 +18,9 @@ type LogPagedResult struct {
 
 // GetAuditLogs retrieves audit log entries
 func (c *Client) GetAuditLogs(ctx context.Context, pattern string, startIndex, limit int, startDate, endDate string) (*LogPagedResult, error) {
-	if c.token == nil {
-		return nil, fmt.Errorf("no token available")
+	token, err := c.getToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
 
 	values := url.Values{}
@@ -41,32 +40,16 @@ func (c *Client) GetAuditLogs(ctx context.Context, pattern string, startIndex, l
 		values.Set("end_date", endDate)
 	}
 
-	endpoint := "/api/v1/audit"
+	endpoint := "/jans-config-api/jans-config-api/api/v1/audit"
 	if len(values) > 0 {
 		endpoint += "?" + values.Encode()
 	}
 
-	req, err := http.NewRequest(http.MethodGet, c.baseURL+endpoint, nil)
+	ret := &LogPagedResult{}
+	err = c.get(ctx, endpoint, token, ret)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+c.token.AccessToken)
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, createError(resp)
-	}
-
-	var logs LogPagedResult
-	if err := json.NewDecoder(resp.Body).Decode(&logs); err != nil {
-		return nil, err
-	}
-
-	return &logs, nil
+	return ret, nil
 }
