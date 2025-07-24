@@ -18,7 +18,7 @@ type LogPagedResult struct {
 
 // GetAuditLogs retrieves audit log entries
 func (c *Client) GetAuditLogs(ctx context.Context, pattern string, startIndex, limit int, startDate, endDate string) (*LogPagedResult, error) {
-	token, err := c.getToken(ctx)
+	token, err := c.getToken(ctx, "https://jans.io/oauth/config/audit-read")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
