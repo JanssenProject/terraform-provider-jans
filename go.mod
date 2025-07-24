@@ -1,4 +1,4 @@
-module github.com/JanssenProject/jans/terraform-provider-jans
+module github.com/JanssenProject/terraform-provider-jans
 
 go 1.23.0
 
