@@ -2,54 +2,45 @@
 package jans
 
 import (
-	"context"
-	"fmt"
-	"net/url"
-	"strconv"
+        "context"
+        "strconv"
 )
 
-// LogPagedResult represents the response structure for audit logs
 type LogPagedResult struct {
-	Start             int      `json:"start,omitempty"`
-	TotalEntriesCount int      `json:"totalEntriesCount,omitempty"`
-	EntriesCount      int      `json:"entriesCount,omitempty"`
-	Entries           []string `json:"entries,omitempty"`
+        Start             int      `json:"start,omitempty"`
+        TotalEntriesCount int      `json:"totalEntriesCount,omitempty"`
+        EntriesCount      int      `json:"entriesCount,omitempty"`
+        Entries           []string `json:"entries,omitempty"`
 }
 
-// GetAuditLogs retrieves audit log entries
 func (c *Client) GetAuditLogs(ctx context.Context, pattern string, startIndex, limit int, startDate, endDate string) (*LogPagedResult, error) {
-	token, err := c.getToken(ctx, "https://jans.io/oauth/config/audit-read")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get token: %w", err)
-	}
+        token, err := c.getToken(ctx, "https://jans.io/oauth/config/audit-logging.readonly")
+        if err != nil {
+                return nil, err
+        }
 
-	values := url.Values{}
-	if pattern != "" {
-		values.Set("pattern", pattern)
-	}
-	if startIndex > 0 {
-		values.Set("startIndex", strconv.Itoa(startIndex))
-	}
-	if limit > 0 {
-		values.Set("limit", strconv.Itoa(limit))
-	}
-	if startDate != "" {
-		values.Set("start_date", startDate)
-	}
-	if endDate != "" {
-		values.Set("end_date", endDate)
-	}
+        queryParams := make(map[string]string)
+        if pattern != "" {
+                queryParams["pattern"] = pattern
+        }
+        if startIndex > 0 {
+                queryParams["startIndex"] = strconv.Itoa(startIndex)
+        }
+        if limit > 0 {
+                queryParams["limit"] = strconv.Itoa(limit)
+        }
+        if startDate != "" {
+                queryParams["start_date"] = startDate
+        }
+        if endDate != "" {
+                queryParams["end_date"] = endDate
+        }
 
-	endpoint := "/jans-config-api/jans-config-api/api/v1/audit"
-	if len(values) > 0 {
-		endpoint += "?" + values.Encode()
-	}
+        var logs LogPagedResult
+        err = c.get(ctx, "/jans-config-api/api/v1/audit", token, &logs, queryParams)
+        if err != nil {
+                return nil, err
+        }
 
-	ret := &LogPagedResult{}
-	err = c.get(ctx, endpoint, token, ret)
-	if err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+        return &logs, nil
 }
