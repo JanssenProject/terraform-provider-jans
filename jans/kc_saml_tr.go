@@ -6,6 +6,7 @@ import (
         "encoding/json"
         "fmt"
         "io"
+        "strings"
 )
 
 type TrustRelationshipForm struct {
@@ -14,31 +15,31 @@ type TrustRelationshipForm struct {
 }
 
 type TrustRelationship struct {
-        DN                       string                `schema:"dn" json:"dn"`
-        Inum                     string                `schema:"inum" json:"inum"`
-        Owner                    string                `schema:"owner" json:"owner"`
-        Name                     string                `schema:"name" json:"name"`
-        DisplayName              string                `schema:"display_name" json:"displayName"`
-        Description              string                `schema:"description" json:"description"`
-        RootUrl                  string                `schema:"root_url" json:"rootUrl"`
-        Enabled                  bool                  `schema:"enabled" json:"enabled"`
-        AlwaysDisplayInConsole   bool                  `schema:"always_display_in_console" json:"alwaysDisplayInConsole"`
-        ClientAuthenticatorType  string                `schema:"client_authenticator_type" json:"clientAuthenticatorType"`
-        Secret                   string                `schema:"secret" json:"secret"`
-        RegisterationAccessToken string                `schema:"registration_access_token" json:"registrationAccessToken"`
-        ConsetRequired           bool                  `schema:"consent_required" json:"consentRequired"`
-        SPMetaDataSourceType     string                `schema:"sp_meta_data_source_type" json:"spMetaDataSourceType"`
-        SamlMetadata             SAMLMetadata          `schema:"saml_metadata" json:"samlMetadata"`
-        RedirectUris             []string              `schema:"redirect_uris" json:"redirectUris"`
-        SPMetaDataURL            string                `schema:"sp_meta_data_url" json:"spMetaDataURL"`
-        MetaLocation             string                `schema:"meta_location" json:"metaLocation"`
-        ReleasedAttributes       []string              `schema:"released_attributes" json:"releasedAttributes"`
-        SPLogoutURL              string                `schema:"sp_logout_url" json:"spLogoutURL"`
-        Status                   string                `schema:"status" json:"status"`
-        ValidationStatus         string                `schema:"validation_status" json:"validationStatus"`
-        ValidationLog            []string              `schema:"validation_log" json:"validationLog"`
-        ProfileConfigurations    ProfileConfigurations `schema:"profile_configurations" json:"profileConfigurations"`
-        BaseDn                   string                `schema:"base_dn" json:"baseDn"`
+        DN                      string                `schema:"dn" json:"dn"`
+        Inum                    string                `schema:"inum" json:"inum"`
+        Owner                   string                `schema:"owner" json:"owner"`
+        Name                    string                `schema:"name" json:"name"`
+        DisplayName             string                `schema:"display_name" json:"displayName"`
+        Description             string                `schema:"description" json:"description"`
+        RootUrl                 string                `schema:"root_url" json:"rootUrl"`
+        Enabled                 bool                  `schema:"enabled" json:"enabled"`
+        AlwaysDisplayInConsole  bool                  `schema:"always_display_in_console" json:"alwaysDisplayInConsole"`
+        ClientAuthenticatorType string                `schema:"client_authenticator_type" json:"clientAuthenticatorType"`
+        Secret                  string                `schema:"secret" json:"secret"`
+        RegistrationAccessToken string                `schema:"registration_access_token" json:"registrationAccessToken"`
+        ConsentRequired         bool                  `schema:"consent_required" json:"consentRequired"`
+        SPMetaDataSourceType    string                `schema:"sp_meta_data_source_type" json:"spMetaDataSourceType"`
+        SamlMetadata            SAMLMetadata          `schema:"saml_metadata" json:"samlMetadata"`
+        RedirectUris            []string              `schema:"redirect_uris" json:"redirectUris"`
+        SPMetaDataURL           string                `schema:"sp_meta_data_url" json:"spMetaDataURL"`
+        MetaLocation            string                `schema:"meta_location" json:"metaLocation"`
+        ReleasedAttributes      []string              `schema:"released_attributes" json:"releasedAttributes"`
+        SPLogoutURL             string                `schema:"sp_logout_url" json:"spLogoutURL"`
+        Status                  string                `schema:"status" json:"status"`
+        ValidationStatus        string                `schema:"validation_status" json:"validationStatus"`
+        ValidationLog           []string              `schema:"validation_log" json:"validationLog"`
+        ProfileConfigurations   ProfileConfigurations `schema:"profile_configurations" json:"profileConfigurations"`
+        BaseDn                  string                `schema:"base_dn" json:"baseDn"`
 }
 
 type SAMLMetadata struct {
@@ -55,24 +56,26 @@ type AdditionalProp struct {
 }
 
 type ProfileConfigurations struct {
-        AddtionalProp1 AdditionalProp `schema:"additional_prop1" json:"additionalProp1"`
-        AddtionalProp2 AdditionalProp `schema:"additional_prop2" json:"additionalProp2"`
-        AddtionalProp3 AdditionalProp `schema:"additional_prop3" json:"additionalProp3"`
+        AdditionalProp1 AdditionalProp `schema:"additional_prop1" json:"additionalProp1"`
+        AdditionalProp2 AdditionalProp `schema:"additional_prop2" json:"additionalProp2"`
+        AdditionalProp3 AdditionalProp `schema:"additional_prop3" json:"additionalProp3"`
 }
 
 func (c *Client) createTRFormData(tr *TrustRelationship, file io.Reader) (map[string]FormField, error) {
         data := map[string]FormField{}
 
-        tr.SPMetaDataSourceType = "manual"
+        // Create a local copy to avoid mutating the input
+        local := *tr
+        local.SPMetaDataSourceType = "manual"
         if file != nil {
                 data["assetFile"] = FormField{
                         Typ:  "file",
                         Data: file,
                 }
-                tr.SPMetaDataSourceType = "file"
+                local.SPMetaDataSourceType = "file"
         }
 
-        b, err := json.Marshal(tr)
+        b, err := json.Marshal(&local)
         if err != nil {
                 return nil, fmt.Errorf("failed to marshal request: %w", err)
         }
@@ -134,6 +137,11 @@ func (c *Client) UpdateTR(ctx context.Context, tr *TrustRelationship, file io.Re
 
 func (c *Client) DeleteTR(ctx context.Context, inum string) error {
 
+        inum = strings.TrimSpace(inum)
+        if inum == "" {
+                return fmt.Errorf("inum is empty")
+        }
+
         scope := "https://jans.io/oauth/config/saml.write"
         token, err := c.ensureToken(ctx, scope)
         if err != nil {
@@ -163,6 +171,11 @@ func (c *Client) GetTRs(ctx context.Context) ([]TrustRelationship, error) {
 }
 
 func (c *Client) GetTR(ctx context.Context, inum string) (*TrustRelationship, error) {
+
+        inum = strings.TrimSpace(inum)
+        if inum == "" {
+                return nil, fmt.Errorf("inum is empty")
+        }
 
         scope := "https://jans.io/oauth/config/saml.readonly"
         token, err := c.ensureToken(ctx, scope)
