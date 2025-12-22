@@ -7,10 +7,13 @@ assignees: ''
 
 ---
 
+
 ## Bug Report
+
 
 ### Description
 Provide a clear and concise description of the bug (e.g., unexpected error during plan/apply, incorrect resource state, provider crash).
+
 
 ### Terraform Configuration
 ```hcl
