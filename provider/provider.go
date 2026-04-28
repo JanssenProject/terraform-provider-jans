@@ -96,8 +96,6 @@ func Provider() *schema.Provider {
                         "jans_token_revocation":              resourceTokenRevocation(),
                         "jans_uma_resource":                  resourceUMAResource(),
                         "jans_user":                          resourceUser(),
-                        "jans_shibboleth_configuration":      jans.ResourceShibbolethConfiguration(),
-                        "jans_shibboleth_trusted_sp":         jans.ResourceShibbolethTrustedSP(),
                 },
 
                 // DataSourcesMap is the collection of available data sources that
